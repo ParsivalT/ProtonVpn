@@ -2,9 +2,43 @@
 import subprocess
 import psutil
 import os
-from random import choice
+from random import choice, randint
 
 
+def check_internet_connection():
+    try:
+        subprocess.run(['ping', '-c', '1', 'www.google.com'], check=True, stdout=subprocess.DEVNULL)
+        return True
+        
+    except subprocess.CalledProcessError:
+        return False
+    
+
+def setmac(interface:str) -> None:
+    while True:
+        
+        new_mac_address = ':'.join(f'{randint(0, 255):02x}' for _ in range(6))
+        print(new_mac_address)
+        
+        
+        try:
+            # Disable Networking interface.
+            subprocess.run(['sudo', 'ip', 'link', 'set', interface, 'down'], check=True)
+        
+            # Changing MAC address.
+            subprocess.run(['sudo', 'ip', 'link', 'set', interface, 'address', new_mac_address])
+                    
+            # Enable Networking interface.
+            subprocess.run(['sudo', 'ip', 'link', 'set', interface, 'up'])
+                
+        except subprocess.CalledProcessError as err:
+            print(f"Error for configurate Networking interface {interface}: {err}")
+
+        if check_internet_connection():
+            print('The Computer is Online!')
+            break
+
+            
 def finish_process(process_name:str) -> None:
     # Finds and terminates all running OpenVPN processes
     for proc in psutil.process_iter(['pid', 'name']):
@@ -49,4 +83,5 @@ def main() -> None:
     print(f"Starting OpenVpn for the country {chosen_country}...")
 
 if __name__ == "__main__":
-    main()
+   # main()
+   setmac('enp9s0')
