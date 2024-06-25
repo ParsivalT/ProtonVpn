@@ -13,13 +13,23 @@ def check_internet_connection():
     except subprocess.CalledProcessError:
         return False
     
-
+# Get interfaces dynamically
+def get_network_interfaces() -> list():
+    try:
+        
+        result = subprocess.run(['ip', 'link', 'show'], capture_output=True, text=True)
+        output = result.stdout.strip().split('\n')
+        interfaces = [line.split(':')[1].strip() for line in output if line.strip().startswith('') and 'state UP' in line]
+        return interfaces
+        
+    except Exception as e:
+        print(f"Error getting network interfaces: {e}")
+        return []
+        
 def setmac(interface:str) -> None:
-    while True:
+    for c in range(3):
         
         new_mac_address = ':'.join(f'{randint(0, 255):02x}' for _ in range(6))
-        print(new_mac_address)
-        
         
         try:
             # Disable Networking interface.
@@ -79,9 +89,13 @@ def main() -> None:
     auth_file = os.path.join(current_path, chosen_country, choice_server)
     
     # Ends the existing OpenVPN process and starts a new one
+    
+    interfaces = get_network_interfaces()
+    if interfaces:
+        for _ in interfaces:
+            setmac(_)
     restart_openvpn(auth_file, config_file)
     print(f"Starting OpenVpn for the country {chosen_country}...")
 
 if __name__ == "__main__":
-   # main()
-   setmac('enp9s0')
+   main()
