@@ -5,19 +5,21 @@ import os
 from random import choice
 
 
-def finish_process(process_name):
+def finish_process(process_name:str) -> None:
     # Finds and terminates all running OpenVPN processes
     for proc in psutil.process_iter(['pid', 'name']):
         if proc.info['name'] == process_name:
             proc.kill()
             print(f"Process {process_name} finish.")
 
-def restart_openvpn(auth_file, config_file):
+
+def restart_openvpn(auth_file:str, config_file:str):
     finish_process("openvpn")
     # Init a new process OpenVpn
     subprocess.Popen(["openvpn", "--config", auth_file, "--auth-user-pass", config_file])
 
-def main():
+
+def main() -> None:
     current_path = os.getcwd()
     # List all directories that do not contain a dot (assuming they are countries).
     dirs_country = [i for i in os.listdir(current_path) if os.path.isdir(os.path.join(current_path, i)) and '.' not in i]
