@@ -30,7 +30,7 @@ class Vpn:
                     break  # Se a configuração foi bem-sucedida, saia do loop
 
                 except subprocess.CalledProcessError as err:
-                    logging.error(f"Error configuring network interface {interface}: {err}")
+                    print(f"Error configuring network interface {interface}: {err}")
                     continue  # Continue tentando com a próxima tentativa
 
         return True
@@ -42,6 +42,7 @@ class Vpn:
                 proc.kill()
                 logging.info(f"Process {process_name} terminated.")
 
+
     def start_vpn(self, auth_file: str, config_file: str) -> None:
         """Inicia o OpenVPN após configurar os endereços MAC das interfaces de rede."""
         if not os.path.isfile(auth_file):
@@ -49,19 +50,33 @@ class Vpn:
         if not os.path.isfile(config_file):
             raise FileNotFoundError(f"Config file {config_file} does not exist.")
         
-        self.__finish_process("openvpn")
+        for _ in range(3):
+            try:
+                self.__finish_process("openvpn")
 
-        interfaces = self.get_network_interfaces()
-        if not interfaces:
-            raise ConnectionError("É necessário que uma interface de rede esteja ativa.")
+                interfaces = self.get_network_interfaces()
+                if not interfaces:
+                    raise ConnectionError("É necessário que uma interface de rede esteja ativa.")
 
-        for interface in  interfaces:
-        	self.__set_mac_address(interfaces):
-        	# TODO: CorriGIR o erro ao que deleta as interfacers
+                #for interface in  interfaces:
+                    #self.__set_mac_address(interfaces)
+                    # TODO: CorriGIR o erro ao que deleta as interfacers 
 
-        # Inicia um novo processo OpenVPN
-        subprocess.Popen(["sudo", "openvpn", "--config", config_file, "--auth-user-pass", auth_file])
-        logging.info("OpenVPN started.")
+                # Inicia um novo processo OpenVPN
+                subprocess.Popen(["sudo", "openvpn", "--config", config_file, "--auth-user-pass", auth_file])
+
+                if not self.check_internet_connection():
+                    raise ConnectionError("Sem conexão com a internet, tentando novamente.")
+
+                logging.info("OpenVPN started.")
+            
+            except subprocess.CalledProcessError:
+                continue
+
+            
+            else:
+                print("Conexão realizada com sucesso!")
+                break
 
     @staticmethod
     def check_internet_connection() -> bool:

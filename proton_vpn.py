@@ -83,7 +83,7 @@ def main() -> None:
     choice_server = choice(dirs_servers)
     
     # Full path to the OpenVpn configurations file.
-    config_file = os.path.join(current_path, 'config.txt')
+    config_file = os.path.join(current_path, 'credential.txt')
     
     # Full path to the username and password file (assuming it is a file within the chosen country and server directory)
     auth_file = os.path.join(current_path, chosen_country, choice_server)
