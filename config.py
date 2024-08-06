@@ -43,3 +43,21 @@ def unblock(path:str) -> bool:
     except Exception as err:
         print(f"Houve um problema: {err}")
         return False
+
+
+def write(path:str, value) -> bool:
+    try:
+        # Check if file is blocked
+        if isblock(path):
+            unblock(path)
+
+        with open(path, "w") as file:
+            file.write(value)
+            
+        block(path)
+
+        return True
+
+    except Exception as err:
+        print(f"Houve um problema {err}")
+
